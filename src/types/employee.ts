@@ -1,13 +1,9 @@
 export interface Employee {
   id: number
+  nik: string
   name: string
-  email: string
+  departemen: string
+  position: string
 }
 
-export interface Developer extends Employee {
-  programmingLanguages?: string[]
-}
-
-export type Manager = Employee & {
-  teamSize?: number
-}
+export type CreateEmployee = Omit<Employee, "id">

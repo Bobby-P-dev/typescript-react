@@ -1,33 +1,59 @@
 import { useState } from "react"
-import { isRole, ROLES, type CreateUser, type Role } from "../../types/user"
+import type { CreateEmployee } from "../../types/employee"
 
 interface UserFormProps {
-  onAddUser: (data: CreateUser) => void
+  onAddEmployee: (data: CreateEmployee) => void
+  isLoading?: boolean
 }
 
-type FormErrors = { [key: string]: string }
+type FormErrors = Partial<Record<keyof CreateEmployee, string>>
 
-export default function UserForm({ onAddUser }: UserFormProps) {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [role, setRole] = useState<Role | null>(null)
-  const [error, setError] = useState<{ name?: string; email?: string }>({})
+const initialFormState: CreateEmployee = {
+  nik: "",
+  name: "",
+  departemen: "",
+  position: "",
+}
+
+export default function UserForm({
+  onAddEmployee,
+  isLoading = false,
+}: UserFormProps) {
+  const [formData, setFormData] = useState<CreateEmployee>(initialFormState)
+  const [error, setError] = useState<FormErrors>({})
 
   function validate(): boolean {
     const newErrors: FormErrors = {}
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    if (!name.trim()) {
+    if (!formData.nik.trim()) {
+      newErrors.nik = "NIK is required"
+    }
+
+    if (!formData.name.trim()) {
       newErrors.name = "Name is required"
     }
-    if (!email.trim()) {
-      newErrors.email = "Email is required"
-    } else if (!emailPattern.test(email.trim())) {
-      newErrors.email = "Email is invalid"
+
+    if (!formData.departemen.trim()) {
+      newErrors.departemen = "Departemen is required"
     }
+
+    if (!formData.position.trim()) {
+      newErrors.position = "Position is required"
+    }
+
     setError(newErrors)
 
     return Object.keys(newErrors).length === 0
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target
+
+    setFormData((prev) => ({ ...prev, [name]: value }))
+
+    if (error[name as keyof CreateEmployee]) {
+      setError((prevErrors) => ({ ...prevErrors, [name]: undefined }))
+    }
   }
 
   function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -37,70 +63,79 @@ export default function UserForm({ onAddUser }: UserFormProps) {
       return
     }
 
-    onAddUser({ name: name.trim(), email: email.trim(), role })
+    onAddEmployee({
+      nik: formData.nik.trim(),
+      name: formData.name.trim(),
+      departemen: formData.departemen.trim(),
+      position: formData.position.trim(),
+    })
 
-    setName("")
-    setEmail("")
-    setRole(null)
+    setFormData(initialFormState)
+    setError({})
   }
 
   return (
     <div>
       <form onSubmit={handleFormSubmit}>
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value)
-            if (error.name) {
-              setError((prevErrors) => ({ ...prevErrors, name: undefined }))
-            }
-          }}
-        />
-        {error.name && (
-          <p style={{ color: "red", margin: "4px 0" }}>{error.name}</p>
-        )}
+        <div>
+          <label htmlFor="nik">NIK</label>
+          <input
+            type="text"
+            id="nik"
+            name="nik"
+            value={formData.nik}
+            onChange={handleChange}
+          />
+          {error.nik && (
+            <p style={{ color: "red", margin: "4px 0" }}>{error.nik}</p>
+          )}
+        </div>
 
-        <label htmlFor="email">Email</label>
-        <input
-          type="text"
-          id="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value)
-            if (error.email) {
-              setError((prevErrors) => ({ ...prevErrors, email: undefined }))
-            }
-          }}
-        />
-        {error.email && (
-          <p style={{ color: "red", margin: "4px 0" }}>{error.email}</p>
-        )}
+        <div>
+          <label htmlFor="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+          {error.name && (
+            <p style={{ color: "red", margin: "4px 0" }}>{error.name}</p>
+          )}
+        </div>
 
-        <label htmlFor="role">Role</label>
-        <select
-          name="role"
-          id="role"
-          value={role ?? ""}
-          onChange={(e) => {
-            const selectedValue = e.target.value
-            if (selectedValue === "") {
-              setRole(null)
-            } else if (isRole(selectedValue)) {
-              setRole(selectedValue)
-            }
-          }}
-        >
-          <option value="">no role</option>
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-        <button type="submit">Add</button>
+        <div>
+          <label htmlFor="departemen">Departemen</label>
+          <input
+            type="text"
+            id="departemen"
+            name="departemen"
+            value={formData.departemen}
+            onChange={handleChange}
+          />
+          {error.departemen && (
+            <p style={{ color: "red", margin: "4px 0" }}>{error.departemen}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="position">Position</label>
+          <input
+            type="text"
+            id="position"
+            name="position"
+            value={formData.position}
+            onChange={handleChange}
+          />
+          {error.position && (
+            <p style={{ color: "red", margin: "4px 0" }}>{error.position}</p>
+          )}
+        </div>
+
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Adding..." : "Add"}
+        </button>
       </form>
     </div>
   )

@@ -11,7 +11,7 @@ export interface User {
   name: string
   email: string
   isActive: boolean
-  role?: Role | null
+  role: Role | null
 }
 
 export type CreateUser = Omit<User, "id" | "isActive">

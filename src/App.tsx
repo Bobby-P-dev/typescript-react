@@ -1,57 +1,68 @@
-import { useState } from "react"
-import { type CreateUser, type User } from "./types/user"
+import { useEffect, useState } from "react"
 import UserList from "./components/users/UserList"
 import UserForm from "./components/users/UserForm"
+import type { CreateEmployee, Employee } from "./types/employee"
+import { fetchEmployee } from "./services/employeeService"
 
 function App() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: "Bobby Pratama",
-      email: "bobbypratama772@gmail.com",
-      isActive: true,
-      role: "Admin",
-    },
-    {
-      id: 2,
-      name: "Bobby Pratama",
-      email: "bobbypratama772@gmail.com",
-      isActive: true,
-      role: null,
-    },
-  ])
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  function handleAddUser(data: CreateUser) {
-    setUsers((currentUsers) => {
-      const nextId = Math.max(0, ...currentUsers.map((user) => user.id)) + 1
+  useEffect(() => {
+    async function loadEmployees() {
+      try {
+        const response = await fetchEmployee()
+        console.log("response", response)
 
-      const newUser: User = {
+        setEmployees(response.data)
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError("Failed to fetch users")
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadEmployees()
+  }, [])
+
+  function handleAddUser(data: CreateEmployee) {
+    setEmployees((currentEmployees) => {
+      const nextId = Math.max(0, ...currentEmployees.map((user) => user.id)) + 1
+
+      const newEmployee: Employee = {
         id: nextId,
-        isActive: true,
-        ...data,
+        nik: data.nik,
+        name: data.name,
+        departemen: data.departemen,
+        position: data.position,
       }
 
-      return [...currentUsers, newUser]
+      return [...currentEmployees, newEmployee]
     })
   }
 
   function handleDelete(id: number): void {
-    setUsers((currentUsers) => currentUsers.filter((user) => user.id !== id))
-  }
-
-  function handleToggle(id: number): void {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === id ? { ...user, isActive: !user.isActive } : user,
-      ),
+    setEmployees((currentEmployees) =>
+      currentEmployees.filter((user) => user.id !== id),
     )
   }
 
   return (
     <div>
       <h1>ERP DASHBOARD</h1>
-      <UserList users={users} onDelete={handleDelete} onToggle={handleToggle} />
-      <UserForm onAddUser={handleAddUser} />
+
+      {loading && <div>Loading...</div>}
+      {!loading && error && <div>Error: {error}</div>}
+      {!loading && !error && (
+        <>
+          <UserList employees={employees} onDelete={handleDelete} />
+          <UserForm onAddEmployee={handleAddUser} />
+        </>
+      )}
     </div>
   )
 }

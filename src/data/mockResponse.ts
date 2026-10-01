@@ -1,6 +1,5 @@
 import type { ApiResponse } from "../types/api"
 import type { User } from "../types/user"
-import type { Developer } from "../types/employee"
 
 export const userResponse: ApiResponse<User> = {
   success: true,
@@ -33,15 +32,4 @@ export const multipleUserResponse: ApiResponse<User[]> = {
       role: null,
     },
   ],
-}
-
-export const employeeResponse: ApiResponse<Developer> = {
-  success: true,
-  message: "Employee fetched successfully",
-  data: {
-    id: 1,
-    name: "Bobby Pratama",
-    email: "[EMAIL_ADDRESS]",
-    programmingLanguages: ["JavaScript", "Python", "Java"],
-  },
 }

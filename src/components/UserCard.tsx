@@ -1,30 +1,19 @@
-import { type User, type UserList } from "../types/user"
+import { type Employee } from "../types/employee"
 
 interface UserCardProps {
-  user: User
-  userList?: UserList[]
+  employee: Employee
   onDelete: (id: number) => void
-  onToggle: (id: number) => void
 }
 
-function UserCard({ user, userList, onDelete, onToggle }: UserCardProps) {
+function UserCard({ employee, onDelete }: UserCardProps) {
   return (
     <div>
-      <p>{user.id}</p>
-      <h2>{user.name}</h2>
-      <p>{user.email}</p>
-      <p>{user.isActive ? "Active" : "Inactive"}</p>
-      <p>{user.role?.toUpperCase() ?? "No role assigned"}</p>
-      <select name="userList" id="userList">
-        {userList?.map((userList) => (
-          <option key={userList.id} value={userList.id}>
-            {userList.name}
-          </option>
-        ))}
-      </select>
-
-      <button onClick={() => onDelete(user.id)}>Delete</button>
-      <button onClick={() => onToggle(user.id)}>Toggle</button>
+      <p>{employee.id}</p>
+      <p>{employee.nik}</p>
+      <h2>{employee.name}</h2>
+      <p>{employee.departemen}</p>
+      <p>{employee.position}</p>
+      <button onClick={() => onDelete(employee.id)}>Delete</button>
     </div>
   )
 }
