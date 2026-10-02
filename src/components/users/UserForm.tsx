@@ -2,7 +2,7 @@ import { useState } from "react"
 import type { CreateEmployee } from "../../types/employee"
 
 interface UserFormProps {
-  onAddEmployee: (data: CreateEmployee) => void
+  onAddEmployee: (data: CreateEmployee) => Promise<void>
   isLoading?: boolean
 }
 

@@ -2,12 +2,14 @@ import { useEffect, useState } from "react"
 import UserList from "./components/users/UserList"
 import UserForm from "./components/users/UserForm"
 import type { CreateEmployee, Employee } from "./types/employee"
-import { fetchEmployee } from "./services/employeeService"
+import { fetchEmployee, storeEmployee } from "./services/employeeService"
 
 function App() {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isAdding, setIsAdding] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadEmployees() {
@@ -29,20 +31,30 @@ function App() {
     loadEmployees()
   }, [])
 
-  function handleAddUser(data: CreateEmployee) {
-    setEmployees((currentEmployees) => {
-      const nextId = Math.max(0, ...currentEmployees.map((user) => user.id)) + 1
+  async function handleAddEmployee(data: CreateEmployee): Promise<void> {
+    try {
+      setIsAdding(true)
+      setCreateError(null)
 
-      const newEmployee: Employee = {
-        id: nextId,
+      const cleanData: CreateEmployee = {
         nik: data.nik,
         name: data.name,
         departemen: data.departemen,
         position: data.position,
       }
 
-      return [...currentEmployees, newEmployee]
-    })
+      const response = await storeEmployee(cleanData)
+
+      setEmployees((currentEmployees) => [...currentEmployees, response.data])
+    } catch (err) {
+      if (err instanceof Error) {
+        setCreateError(err.message)
+      } else {
+        setCreateError("Failed to create employee")
+      }
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   function handleDelete(id: number): void {
@@ -60,7 +72,10 @@ function App() {
       {!loading && !error && (
         <>
           <UserList employees={employees} onDelete={handleDelete} />
-          <UserForm onAddEmployee={handleAddUser} />
+          <UserForm onAddEmployee={handleAddEmployee} isLoading={isAdding} />
+          {createError && (
+            <p style={{ color: "red", margin: "4px 0" }}>{createError}</p>
+          )}
         </>
       )}
     </div>
